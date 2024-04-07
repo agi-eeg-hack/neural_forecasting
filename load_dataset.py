@@ -2,16 +2,21 @@ import pandas as pd
 from pytorch_forecasting import TimeSeriesDataSet
 
 
-def read_csv_neurosity_dataset(file):
+def read_csv_neurosity_dataset(file, include_finetune=True):
     #data = pd.read_csv(file, nrows=10000)
     #data = pd.read_pickle(file)#, nrows=1000)
     data = pd.read_pickle(file)
+    if include_finetune:
+        data2 = pd.read_pickle("combined_dataset_finetune.pkl")
+        data2["session_id"] = data2["session_id"].astype(str)
+        data = pd.concat([data, data2], ignore_index=True)
+        #import pdb;pdb.set_trace()
 
     max_encoder_length = 257
     max_prediction_length = 1
-    N = int(len(data) * 0.85)
+    N = int(len(data) * 1.0)
 
-    data["index"] = data.index
+    data["index"] = range(len(data))
 
     data["left_hand"] = data["left_hand"].astype(str)
     data["right_hand"] = data["right_hand"].astype(str)
