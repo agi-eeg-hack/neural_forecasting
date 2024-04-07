@@ -16,13 +16,14 @@ def create_tft_model(training):
     tft = TemporalFusionTransformer.from_dataset(
         training,
         learning_rate=0.001,
-        hidden_size=512,
-        attention_head_size=8,
+        hidden_size=1024,
+        attention_head_size=16,
         dropout=0.0,
-        hidden_continuous_size=256,
+        hidden_continuous_size=512,
         output_size=[7]*8+[6]*2,
         #loss=MultiLoss([QuantileLoss() for _ in range(8)]+[CrossEntropy()]*2, weights=[1.0]*8+[0.0]*2),
-        loss=MultiLoss([QuantileLoss() for _ in range(8)]+[CrossEntropy()]*2, weights=[0.0]*8+[1.0]*2),
+        #loss=MultiLoss([QuantileLoss() for _ in range(8)]+[CrossEntropy()]*2, weights=[0.0]*8+[1.0]*2),
+        loss=MultiLoss([QuantileLoss() for _ in range(8)]+[CrossEntropy()]*2, weights=[0.5]*8+[1.0]*2),
         log_interval=2,
         #logging_metrics=nn.ModuleList([MultiLoss([RMSE()]*8+[RMSE()]*2, weights=[1.0]*8+[0.0]*2)]),
         reduce_on_plateau_patience=4

@@ -12,7 +12,6 @@ def read_csv_neurosity_dataset(file, include_finetune=True):
     if include_finetune:
         data2 = pd.read_pickle("combined_dataset_finetune.pkl")
         data2 = data2.dropna()
-        data2["session_id"] = data2["session_id"].astype(str)
         data = pd.concat([data, data2], ignore_index=True)
         #import pdb;pdb.set_trace()
     #data = pd.read_csv("combined_dataset_finetune.csv")
@@ -24,6 +23,7 @@ def read_csv_neurosity_dataset(file, include_finetune=True):
 
     data["index"] = range(len(data))
 
+    data["session_id"] = data["session_id"].astype(str)
     data["left_hand"] = data["left_hand"].astype(str)
     data["right_hand"] = data["right_hand"].astype(str)
     data["showing"] = data["showing"].astype(str)

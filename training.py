@@ -18,7 +18,7 @@ from load_dataset import read_csv_neurosity_dataset
 
 
 #train_dataloader, val_dataloader, training = read_csv_neurosity_dataset("combined_dataset.csv")
-train_dataloader, val_dataloader, training = read_csv_neurosity_dataset("combined_dataset.pkl")
+train_dataloader, val_dataloader, training = read_csv_neurosity_dataset("combined_dataset.pkl", include_finetune=False)
 
 from lightning.pytorch.callbacks import Callback
 

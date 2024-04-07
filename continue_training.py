@@ -58,7 +58,8 @@ trainer = pl.Trainer(
     gradient_clip_val=0.1,
     limit_train_batches=30,
     #callbacks=[lr_logger, early_stop_callback],
-    callbacks=[lr_logger, PrintCallback()],
+    #callbacks=[lr_logger, PrintCallback()],
+    callbacks=[lr_logger],
     logger=tensorboard,
     #devices=[3,4],
 )
