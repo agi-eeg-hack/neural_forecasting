@@ -6,6 +6,7 @@ from pytorch_forecasting.metrics import MAE, SMAPE, PoissonLoss, QuantileLoss, R
 import pandas as pd
 import pytorch_forecasting
 from pytorch_forecasting import TimeSeriesDataSet, TemporalFusionTransformer
+import torch
 # next(iter(train_dataloader))
 from pytorch_lightning import loggers as pl_loggers
 tensorboard = pl_loggers.TensorBoardLogger('./')
@@ -24,10 +25,22 @@ from lightning.pytorch.callbacks import Callback
 class PrintCallback(Callback):
     def on_train_epoch_end(self, trainer, pl_module):
         # calculate baseline mean absolute error, i.e. predict next value as the last available value from the history
-        baseline_predictions = pl_module.predict(val_dataloader, return_y=True)
-        mse=RMSE()(baseline_predictions.output, baseline_predictions.y).mean()
+        #baseline_predictions = pl_module.predict(val_dataloader, return_y=True)
+        mse = 0
+        n = 0
+        for x,y in val_dataloader:
+            baseline_predictions = pl_module({k: (v.to(pl_module.device) if not isinstance(v,list) else [vv.to(pl_module.device) for vv in v]) for k,v in x.items()})
+            ypred = torch.concatenate(baseline_predictions['prediction'][:8], dim=1)[:,:,3]
+            y = torch.concatenate(y[0][:8], dim=1).to(pl_module.device)
+            #import pdb; pdb.set_trace()
+            mse += (ypred - y)**2
+            n+=1
+
+        mse /= n
+        mse = mse.mean()
+        #mse=RMSE()(baseline_predictions.output, baseline_predictions.y).mean()
         print(mse)
-        pl_module.log({"val_mse": mse})
+        pl_module.log("val_mse", mse)
 
 # define trainer with early stopping
 early_stop_callback = EarlyStopping(monitor="val_loss", min_delta=1e-4, patience=1, verbose=False, mode="min")
