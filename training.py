@@ -33,11 +33,11 @@ class PrintCallback(Callback):
             ypred = torch.concatenate(baseline_predictions['prediction'][:8], dim=1)[:,:,3]
             y = torch.concatenate(y[0][:8], dim=1).to(pl_module.device)
             #import pdb; pdb.set_trace()
-            mse += (ypred - y)**2
-            n+=1
+            mse += ((ypred - y)**2).mean()
+            n+=val_dataloader.batch_size
 
         mse /= n
-        mse = mse.mean()
+        mse = mse
         #mse=RMSE()(baseline_predictions.output, baseline_predictions.y).mean()
         print(mse)
         pl_module.log("val_mse", mse)
@@ -48,14 +48,14 @@ early_stop_callback = EarlyStopping(monitor="val_loss", min_delta=1e-4, patience
 lr_logger = LearningRateMonitor()
 trainer = pl.Trainer(
     max_epochs=100,
-    #accelerator="auto",
-    accelerator="gpu",
+    accelerator="auto",
+    #accelerator="gpu",
     gradient_clip_val=0.1,
     limit_train_batches=30,
     #callbacks=[lr_logger, early_stop_callback],
     callbacks=[lr_logger, PrintCallback()],
     logger=tensorboard,
-    devices=[3,4],
+    #devices=[3,4],
 )
 
 from create_model import create_tft_model

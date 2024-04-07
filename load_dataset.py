@@ -3,14 +3,19 @@ from pytorch_forecasting import TimeSeriesDataSet
 
 
 def read_csv_neurosity_dataset(file, include_finetune=True):
+#def read_csv_neurosity_dataset(file, include_finetune=True):
     #data = pd.read_csv(file, nrows=10000)
     #data = pd.read_pickle(file)#, nrows=1000)
     data = pd.read_pickle(file)
+    #data2 = pd.read_pickle("combined_dataset_finetune.pkl")
     if include_finetune:
         data2 = pd.read_pickle("combined_dataset_finetune.pkl")
+        data2 = data2.dropna()
         data2["session_id"] = data2["session_id"].astype(str)
         data = pd.concat([data, data2], ignore_index=True)
         #import pdb;pdb.set_trace()
+    #data = pd.read_csv("combined_dataset_finetune.csv")
+    #import pdb; pdb.set_trace()
 
     max_encoder_length = 257
     max_prediction_length = 1
