@@ -24,24 +24,26 @@ from lightning.pytorch.callbacks import Callback
 class PrintCallback(Callback):
     def on_train_epoch_end(self, trainer, pl_module):
         # calculate baseline mean absolute error, i.e. predict next value as the last available value from the history
-        baseline_predictions = pl_module.predict(val_dataloader, return_y=True)
-        mse=RMSE()(baseline_predictions.output, baseline_predictions.y).mean()
-        print(mse)
-        pl_module.log({"val_mse": mse})
+        #baseline_predictions = pl_module.predict(val_dataloader, return_y=True)
+        #import pdb; pdb.set_trace()
+        #mse=RMSE()(baseline_predictions.output, torch.cat(baseline_predictions.y, dim=0)).mean()
+        print(trainer.logged_metrics)
+        #print(mse)
+        #pl_module.log({"val_mse": mse})
 
 # define trainer with early stopping
 early_stop_callback = EarlyStopping(monitor="val_loss", min_delta=1e-4, patience=1, verbose=False, mode="min")
 lr_logger = LearningRateMonitor()
 trainer = pl.Trainer(
     max_epochs=100,
-    accelerator="auto",
-    #accelerator="gpu",
+    #accelerator="auto",
+    accelerator="gpu",
     gradient_clip_val=0.1,
     limit_train_batches=30,
     #callbacks=[lr_logger, early_stop_callback],
     callbacks=[lr_logger, PrintCallback()],
     logger=tensorboard,
-    #devices=[1,3,4],
+    devices=[3,4],
 )
 
 from create_model import create_tft_model

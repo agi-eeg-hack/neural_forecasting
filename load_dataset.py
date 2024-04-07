@@ -3,8 +3,9 @@ from pytorch_forecasting import TimeSeriesDataSet
 
 
 def read_csv_neurosity_dataset(file):
-    #data = pd.read_csv(file)#, nrows=1000)
-    data = pd.read_pickle(file)#, nrows=1000)
+    #data = pd.read_csv(file, nrows=10000)
+    #data = pd.read_pickle(file)#, nrows=1000)
+    data = pd.read_pickle(file)
 
     max_encoder_length = 257
     max_prediction_length = 1
