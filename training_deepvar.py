@@ -39,7 +39,7 @@ net = DeepAR.from_dataset(
     loss=MultiLoss([MultivariateNormalDistributionLoss(rank=30) for _ in range(8)]),
     optimizer="Adam"
 )
-print(f"Number of parameters in network: {tft.size()/1e3:.1f}k")
+print(f"Number of parameters in network: {net.size()/1e3:.1f}k")
 
 res = Tuner(trainer).lr_find(
     net,
@@ -51,4 +51,4 @@ res = Tuner(trainer).lr_find(
 )
 print(f"suggested learning rate: {res.suggestion()}")
 
-trainer.fit(tft, train_dataloaders=train_dataloader, val_dataloaders=val_dataloader)
+trainer.fit(net, train_dataloaders=train_dataloader, val_dataloaders=val_dataloader)
