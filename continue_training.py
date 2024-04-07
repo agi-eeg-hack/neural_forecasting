@@ -6,13 +6,19 @@ from pytorch_forecasting.metrics import MAE, SMAPE, PoissonLoss, QuantileLoss
 import pandas as pd
 import pytorch_forecasting
 from pytorch_forecasting import TimeSeriesDataSet, TemporalFusionTransformer
-from pytorch_forecasting.metrics import MAE, SMAPE, MultivariateNormalDistributionLoss
 # next(iter(train_dataloader))
 from pytorch_lightning import loggers as pl_loggers
 tensorboard = pl_loggers.TensorBoardLogger('./')
-from pytorch_forecasting.metrics.base_metrics import MultiLoss
+import argparse
+parser = argparse.ArgumentParser(description="Model training script")
+parser.add_argument("--checkpoint_path", type=str, default="checkpoints/",
+                    help="Directory where the model checkpoints will be saved")
 
-from load_dataset import train_dataloader, val_dataloader, training
+args = parser.parse_args()
+
+from load_dataset import read_csv_neurosity_dataset
+
+train_dataloader, val_dataloader, training = read_csv_neurosity_dataset("combined_dataset.csv")
 
 # define trainer with early stopping
 early_stop_callback = EarlyStopping(monitor="val_loss", min_delta=1e-4, patience=1, verbose=False, mode="min")
@@ -27,21 +33,9 @@ trainer = pl.Trainer(
     logger=tensorboard
 )
 
-# create the model
-tft = TemporalFusionTransformer.from_dataset(
-    training,
-    learning_rate=0.001,
-    hidden_size=512,
-    attention_head_size=8,
-    dropout=0.0,
-    hidden_continuous_size=256,
-    # output_size=[1,1,1,1,1,1,1,1],
-    #loss=QuantileLoss(),
-    loss=MultiLoss([MultivariateNormalDistributionLoss(rank=30) for _ in range(8)]),
-    log_interval=2,
-    reduce_on_plateau_patience=4
-)
-print(f"Number of parameters in network: {tft.size()/1e3:.1f}k")
+#from create_model import create_tft_model
+
+model = TemporalFusionTransformer.load_from_checkpoint(args.checkpoint_path)
 
 # find optimal learning rate (set limit_train_batches to 1.0 and log_interval = -1)
 #res = Tuner(trainer).lr_find(
