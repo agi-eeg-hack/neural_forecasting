@@ -5,12 +5,15 @@ from lightning.pytorch.tuner import Tuner
 from pytorch_forecasting.metrics import MAE, SMAPE, PoissonLoss, QuantileLoss
 import pandas as pd
 import pytorch_forecasting
-from pytorch_forecasting import TimeSeriesDataSet, TemporalFusionTransformer
-# next(iter(train_dataloader))
+from pytorch_forecasting import TimeSeriesDataSet, TemporalFusionTransformer, DeepAR
+from pytorch_forecasting.metrics import MAE, SMAPE, MultivariateNormalDistributionLoss
 from pytorch_lightning import loggers as pl_loggers
 tensorboard = pl_loggers.TensorBoardLogger('./')
+from pytorch_forecasting.metrics.base_metrics import MultiLoss
 
 from load_dataset import train_dataloader, val_dataloader, training
+
+# next(iter(train_dataloader))
 
 # define trainer with early stopping
 early_stop_callback = EarlyStopping(monitor="val_loss", min_delta=1e-4, patience=1, verbose=False, mode="min")
@@ -26,27 +29,26 @@ trainer = pl.Trainer(
 )
 
 # create the model
-tft = TemporalFusionTransformer.from_dataset(
+net = DeepAR.from_dataset(
     training,
     learning_rate=0.001,
     hidden_size=512,
-    attention_head_size=8,
-    dropout=0.0,
-    hidden_continuous_size=256,
-    # output_size=[1,1,1,1,1,1,1,1],
-    loss=QuantileLoss(),
     log_interval=2,
-    reduce_on_plateau_patience=4
+    reduce_on_plateau_patience=4,
+    rnn_layers=3,
+    loss=MultiLoss([MultivariateNormalDistributionLoss(rank=30) for _ in range(8)]),
+    optimizer="Adam"
 )
 print(f"Number of parameters in network: {tft.size()/1e3:.1f}k")
 
-# find optimal learning rate (set limit_train_batches to 1.0 and log_interval = -1)
-#res = Tuner(trainer).lr_find(
-#    tft, train_dataloaders=train_dataloader, val_dataloaders=val_dataloader, early_stop_threshold=1000.0, max_lr=0.3,
-#)
-
-#print(f"suggested learning rate: {res.suggestion()}")
-# fig = res.plot(show=True, suggest=True)
-# fig.show()
+res = Tuner(trainer).lr_find(
+    net,
+    train_dataloaders=train_dataloader,
+    val_dataloaders=val_dataloader,
+    min_lr=1e-5,
+    max_lr=1e0,
+    early_stop_threshold=100,
+)
+print(f"suggested learning rate: {res.suggestion()}")
 
 trainer.fit(tft, train_dataloaders=train_dataloader, val_dataloaders=val_dataloader)

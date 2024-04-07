@@ -1,0 +1,3 @@
+combined_dataset.csv
+__pycache__/*
+lightning_logs/*
