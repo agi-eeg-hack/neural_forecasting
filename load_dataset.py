@@ -44,6 +44,7 @@ def read_csv_neurosity_dataset(file):
         time_varying_known_reals=["timestamp"],
         time_varying_known_categoricals=["showing", "doing"],
     )
+    print("Created dataset")
 
     # create validation and training dataset
     validation = TimeSeriesDataSet.from_dataset(

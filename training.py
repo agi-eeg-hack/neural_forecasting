@@ -2,7 +2,7 @@
 import lightning.pytorch as pl
 from lightning.pytorch.callbacks import EarlyStopping, LearningRateMonitor
 from lightning.pytorch.tuner import Tuner
-from pytorch_forecasting.metrics import MAE, SMAPE, PoissonLoss, QuantileLoss
+from pytorch_forecasting.metrics import MAE, SMAPE, PoissonLoss, QuantileLoss, RMSE
 import pandas as pd
 import pytorch_forecasting
 from pytorch_forecasting import TimeSeriesDataSet, TemporalFusionTransformer
@@ -35,12 +35,13 @@ lr_logger = LearningRateMonitor()
 trainer = pl.Trainer(
     max_epochs=100,
     accelerator="auto",
+    #accelerator="gpu",
     gradient_clip_val=0.1,
     limit_train_batches=30,
     #callbacks=[lr_logger, early_stop_callback],
     callbacks=[lr_logger, PrintCallback()],
     logger=tensorboard,
-    #devices=[1,2,3],
+    #devices=[1,3,4],
 )
 
 from create_model import create_tft_model
