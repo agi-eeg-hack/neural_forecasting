@@ -2,16 +2,14 @@
 import lightning.pytorch as pl
 from lightning.pytorch.callbacks import EarlyStopping, LearningRateMonitor
 from lightning.pytorch.tuner import Tuner
-from pytorch_forecasting.metrics import MAE, SMAPE, PoissonLoss, QuantileLoss, MultiLoss, CrossEntropy
-from torch as nn
+from pytorch_forecasting.metrics import MAE, SMAPE, PoissonLoss, QuantileLoss, MultiLoss, CrossEntropy, RMSE
+from torch import nn
 import pandas as pd
 import pytorch_forecasting
 from pytorch_forecasting import TimeSeriesDataSet, TemporalFusionTransformer
 # next(iter(train_dataloader))
 from pytorch_lightning import loggers as pl_loggers
 tensorboard = pl_loggers.TensorBoardLogger('./')
-
-from load_dataset import train_dataloader, val_dataloader, training
 
 def create_tft_model(training):
     # create the model
@@ -25,7 +23,7 @@ def create_tft_model(training):
         output_size=[7]*8+[6]*2,
         loss=MultiLoss([QuantileLoss() for _ in range(8)]+[CrossEntropy()]*2, weights=[1.0]*8+[0.0]*2),
         log_interval=2,
-        logger_metrics=nn.ModuleList([MultiLoss([RMSE()]*8+[RMSE()]*2, weights=[1.0]*8+[0.0]*2)]),
+        #logging_metrics=nn.ModuleList([MultiLoss([RMSE()]*8+[RMSE()]*2, weights=[1.0]*8+[0.0]*2)]),
         reduce_on_plateau_patience=4
     )
     print(f"Number of parameters in network: {tft.size()/1e3:.1f}k")

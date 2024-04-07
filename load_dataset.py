@@ -3,13 +3,12 @@ from pytorch_forecasting import TimeSeriesDataSet
 
 
 def read_csv_neurosity_dataset(file):
-    data = pd.read_csv(file)
+    #data = pd.read_csv(file)#, nrows=1000)
+    data = pd.read_pickle(file)#, nrows=1000)
 
     max_encoder_length = 257
     max_prediction_length = 1
     N = int(len(data) * 0.85)
-
-    data = data.head(10)
 
     data["index"] = data.index
 
@@ -18,7 +17,9 @@ def read_csv_neurosity_dataset(file):
     data["showing"] = data["showing"].astype(str)
     data["doing"] = data["doing"].astype(str)
 
-    data.sample(frac=1)
+    #groups = [group for _, group in data.groupby('session_id')]
+    #np.random.shuffle(groups)
+    #data = pd.concat(groups).reset_index(drop=True)
 
     training = TimeSeriesDataSet(
         data,
